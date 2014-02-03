@@ -16,7 +16,6 @@
 #if SANITIZER_WINDOWS
 #include <windows.h>
 
-#include <dbghelp.h>
 #include <stdlib.h>
 
 #include "asan_interceptors.h"
@@ -36,23 +35,23 @@ extern "C" {
 namespace __asan {
 
 // ---------------------- TSD ---------------- {{{1
+static DWORD tsd_key = 0;
 static bool tsd_key_inited = false;
-
-static __declspec(thread) void *fake_tsd = 0;
 
 void AsanTSDInit(void (*destructor)(void *tsd)) {
   // FIXME: we're ignoring the destructor for now.
+  tsd_key = TlsAlloc();
   tsd_key_inited = true;
 }
 
 void *AsanTSDGet() {
   CHECK(tsd_key_inited);
-  return fake_tsd;
+  return TlsGetValue(tsd_key);
 }
 
 void AsanTSDSet(void *tsd) {
   CHECK(tsd_key_inited);
-  fake_tsd = tsd;
+  TlsSetValue(tsd_key, tsd);
 }
 
 void PlatformTSDDtor(void *tsd) {
