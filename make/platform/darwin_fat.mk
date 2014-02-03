@@ -39,7 +39,7 @@ UniversalArchs := i386 x86_64
 
 CC := clang
 
-CFLAGS := -Wall -Werror
+CFLAGS := -fPIC -Wall -Werror
 CFLAGS.Debug := $(CFLAGS) -g
 CFLAGS.Release := $(CFLAGS) -O3 -fomit-frame-pointer
 CFLAGS.Profile := $(CFLAGS) -pg -g

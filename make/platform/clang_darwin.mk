@@ -136,7 +136,7 @@ endif
 override CC := $(subst -arch ,-arch_,$(CC))
 override CC := $(patsubst -arch_%,,$(CC))
 
-CFLAGS := -Wall -Werror -O3 -fomit-frame-pointer
+CFLAGS := -fPIC -Wall -Werror -O3 -fomit-frame-pointer
 
 # Always set deployment target arguments for every build, these libraries should
 # never depend on the environmental overrides. We simply set them to minimum

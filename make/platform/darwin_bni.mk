@@ -29,7 +29,7 @@ ifneq (,$(SDKROOT))
 	DEPLOYMENT_FLAGS += -isysroot $(SDKROOT)
 endif
 
-CFLAGS := -Wall -Os -fomit-frame-pointer -g $(DEPLOYMENT_FLAGS)
+CFLAGS := -fPIC -Wall -Os -fomit-frame-pointer -g $(DEPLOYMENT_FLAGS)
 CFLAGS.Static := $(CFLAGS) -static  
 DYLIB_FLAGS := $(DEPLOYMENT_FLAGS) \
 		-Xarch_arm -Wl,-alias_list,$(SRCROOT)/lib/arm/softfloat-alias.list
