@@ -7,9 +7,7 @@
 
 #ifdef __x86_64__
 
-#ifndef __ELF__
-.const
-#endif
+CONST_SECTION
 .align 4
 twop64: .quad 0x43f0000000000000
 
@@ -35,7 +33,7 @@ END_COMPILERRT_FUNCTION(__floatundixf)
 
 #ifdef __x86_64__
 
-.const
+CONST_SECTION
 .align 4
 twop52: .quad 0x4330000000000000
 twop84_plus_twop52_neg:

@@ -18,7 +18,7 @@
 
 #ifdef __i386__
 
-.const
+CONST_SECTION
 .align 3
 
 		.quad	0x43f0000000000000
@@ -52,8 +52,8 @@ END_COMPILERRT_FUNCTION(__floatundisf)
 
 #ifdef __i386__
 
-#ifndef __ELF__
-.const
+CONST_SECTION
+#if !defined(__ELF__) && !defined(__WIN32__)
 .align 3
 #else
 .align 8
@@ -74,7 +74,7 @@ DEFINE_COMPILERRT_FUNCTION(__floatundisf)
 	movd		8(%esp),		%xmm1
 	movd		4(%esp),		%xmm0
 	punpckldq	%xmm1,			%xmm0
-	
+
 	calll		0f
 0:	popl		%ecx
 	shrl		%eax					// high 31 bits of input as sint32

@@ -27,12 +27,16 @@
 #define LOCAL_LABEL(name) L_##name
 #define FILE_LEVEL_DIRECTIVE  .subsections_via_symbols
 #define SYMBOL_IS_FUNC(name)
+#define CONST_SECTION .const
 #else
 #define HIDDEN_DIRECTIVE .hidden
 #define LOCAL_LABEL(name) .L_##name
 #define FILE_LEVEL_DIRECTIVE
+#define CONST_SECTION .text
 #  if defined(__arm__)
 #  define SYMBOL_IS_FUNC(name) .type name, %function
+#  elif __WIN32__
+#  define SYMBOL_IS_FUNC(name) .def name; .scl 3; .type 32; .endef
 #  else
 #  define SYMBOL_IS_FUNC(name) .type name, @function
 #  endif

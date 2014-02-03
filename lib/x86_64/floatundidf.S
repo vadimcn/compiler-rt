@@ -17,9 +17,7 @@
 
 #ifdef __x86_64__
 
-#ifndef __ELF__
-.const
-#endif
+CONST_SECTION
 .align 4
 twop52: .quad 0x4330000000000000
 twop84_plus_twop52:
