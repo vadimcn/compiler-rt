@@ -382,6 +382,8 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
 }
 
 void StackTrace::SlowUnwindStack(uptr pc, uptr max_depth) {
+// mingw headers do not have CaptureStackBackTrace() (TODO: enable if compiling with mingw-w64)
+#if defined(_MSC_VER)
   // FIXME: CaptureStackBackTrace might be too slow for us.
   // FIXME: Compare with StackWalk64.
   // FIXME: Look at LLVMUnhandledExceptionFilter in Signals.inc
@@ -393,6 +395,7 @@ void StackTrace::SlowUnwindStack(uptr pc, uptr max_depth) {
   // Skip the RTL frames by searching for the PC in the stacktrace.
   uptr pc_location = LocatePcInTrace(pc);
   PopStackFrames(pc_location);
+#endif
 }
 
 void MaybeOpenReportFile() {
@@ -402,8 +405,6 @@ void MaybeOpenReportFile() {
 }
 
 void RawWrite(const char *buffer) {
-  static const char *kRawWriteError =
-      "RawWrite can't output requested buffer!\n";
   uptr length = (uptr)internal_strlen(buffer);
   if (length != internal_write(report_fd, buffer, length)) {
     // stderr may be closed, but we may be able to print to the debugger

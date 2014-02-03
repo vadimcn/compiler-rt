@@ -13,12 +13,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
+#include "sanitizer_symbolizer.h"
 #if SANITIZER_WINDOWS
+// As of this writing, vanilla mingw did not have dbghelp header and library (although mingw-w64 did).
+// However, if we are compiling with mingw, dbghelp is not going to understand our debug info format anyways.
+#if defined(_MSC_VER)
 #include <windows.h>
 #include <dbghelp.h>
 #pragma comment(lib, "dbghelp.lib")
-
-#include "sanitizer_symbolizer.h"
 
 namespace __sanitizer {
 
@@ -96,4 +98,19 @@ Symbolizer *Symbolizer::PlatformInit(const char *path_to_external) {
 
 }  // namespace __sanitizer
 
-#endif  // _WIN32
+#else // _MSC_VER
+
+namespace __sanitizer {
+
+Symbolizer *Symbolizer::PlatformInit(const char *path_to_external) {
+  static bool called_once = false;
+  CHECK(!called_once && "Shouldn't create more than one symbolizer");
+  called_once = true;
+  return Disable();
+}
+
+}  // namespace __sanitizer
+
+#endif // _MSC_VER
+
+#endif  // SANITIZER_WINDOWS

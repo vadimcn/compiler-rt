@@ -133,15 +133,15 @@ void ReplaceSystemMalloc() {
 #  error ReplaceSystemMalloc was not tested on x64
 # endif
   char *crt_malloc;
-  if (GetRealFunctionAddress("malloc", (void**)&crt_malloc)) {
+  if (GetRealFunctionAddress("malloc", (uptr*)&crt_malloc)) {
     // Replace malloc in the CRT dll with a jump to our malloc.
     DWORD old_prot, unused;
     CHECK(VirtualProtect(crt_malloc, 16, PAGE_EXECUTE_READWRITE, &old_prot));
-    REAL(memset)(crt_malloc, 0xCC /* int 3 */, 16);  // just in case.
+    internal_memset(crt_malloc, 0xCC /* int 3 */, 16);  // just in case.
 
     ptrdiff_t jmp_offset = (char*)malloc - (char*)crt_malloc - 5;
     crt_malloc[0] = 0xE9;  // jmp, should be followed by an offset.
-    REAL(memcpy)(crt_malloc + 1, &jmp_offset, sizeof(jmp_offset));
+    internal_memcpy(crt_malloc + 1, &jmp_offset, sizeof(jmp_offset));
 
     CHECK(VirtualProtect(crt_malloc, 16, old_prot, &unused));
 

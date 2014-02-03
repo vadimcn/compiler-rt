@@ -16,11 +16,12 @@
 
 #include "interception.h"
 #include <windows.h>
-
+#include <stddef.h>
 namespace __interception {
 
 bool GetRealFunctionAddress(const char *func_name, uptr *func_addr) {
   const char *DLLS[] = {
+    "msvcrt.dll",
     "msvcr80.dll",
     "msvcr90.dll",
     "kernel32.dll",
