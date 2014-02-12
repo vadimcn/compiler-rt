@@ -23,21 +23,23 @@
 #endif
 
 #if defined(__APPLE__)
-#define HIDDEN_DIRECTIVE .private_extern
+#define HIDDEN_DIRECTIVE(name) .private_extern name
 #define LOCAL_LABEL(name) L_##name
 #define FILE_LEVEL_DIRECTIVE  .subsections_via_symbols
 #define SYMBOL_IS_FUNC(name)
 #define CONST_SECTION .const
 #else
-#define HIDDEN_DIRECTIVE .hidden
 #define LOCAL_LABEL(name) .L_##name
 #define FILE_LEVEL_DIRECTIVE
 #define CONST_SECTION .text
 #  if defined(__arm__)
+#  define HIDDEN_DIRECTIVE(name) .hidden name
 #  define SYMBOL_IS_FUNC(name) .type name, %function
 #  elif __WIN32__
+#  define HIDDEN_DIRECTIVE(name)
 #  define SYMBOL_IS_FUNC(name) .def name; .scl 3; .type 32; .endef
 #  else
+#  define HIDDEN_DIRECTIVE(name) .hidden name
 #  define SYMBOL_IS_FUNC(name) .type name, @function
 #  endif
 #endif
@@ -94,7 +96,7 @@
 
 #ifdef VISIBILITY_HIDDEN
 #define DECLARE_SYMBOL_VISIBILITY(name)                    \
-  HIDDEN_DIRECTIVE SYMBOL_NAME(name) SEPARATOR
+  HIDDEN_DIRECTIVE(SYMBOL_NAME(name)) SEPARATOR
 #else
 #define DECLARE_SYMBOL_VISIBILITY(name)
 #endif
@@ -109,13 +111,13 @@
 #define DEFINE_COMPILERRT_PRIVATE_FUNCTION(name)           \
   .globl SYMBOL_NAME(name) SEPARATOR                       \
   SYMBOL_IS_FUNC(SYMBOL_NAME(name)) SEPARATOR              \
-  HIDDEN_DIRECTIVE SYMBOL_NAME(name) SEPARATOR             \
+  HIDDEN_DIRECTIVE(SYMBOL_NAME(name)) SEPARATOR             \
   SYMBOL_NAME(name):
 
 #define DEFINE_COMPILERRT_PRIVATE_FUNCTION_UNMANGLED(name) \
   .globl name SEPARATOR                                    \
   SYMBOL_IS_FUNC(name) SEPARATOR                           \
-  HIDDEN_DIRECTIVE name SEPARATOR                          \
+  HIDDEN_DIRECTIVE(name) SEPARATOR                          \
   name:
 
 #define DEFINE_COMPILERRT_FUNCTION_ALIAS(name, target)     \

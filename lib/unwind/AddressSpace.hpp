@@ -16,9 +16,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 
 #if __APPLE__
+#include <dlfcn.h>
 #include <mach-o/getsect.h>
 namespace libunwind {
    bool checkKeyMgrRegisteredFDEs(uintptr_t targetAddr, void *&fde);
@@ -53,7 +53,7 @@ struct UnwindInfoSections {
 /// LocalAddressSpace is used as a template parameter to UnwindCursor when
 /// unwinding a thread in the same process.  The wrappers compile away,
 /// making local unwinds fast.
-class __attribute__((visibility("hidden"))) LocalAddressSpace {
+class _LIBUNWIND_HIDDEN LocalAddressSpace {
 public:
 #if __LP64__
   typedef uint64_t pint_t;
@@ -221,7 +221,7 @@ inline LocalAddressSpace::pint_t LocalAddressSpace::getEncodedP(pint_t &addr,
   return result;
 }
 
-#if __APPLE__ 
+#if __APPLE__
   struct dyld_unwind_sections
   {
     const struct mach_header*   mh;
@@ -237,27 +237,27 @@ inline LocalAddressSpace::pint_t LocalAddressSpace::getEncodedP(pint_t &addr,
     extern "C" bool _dyld_find_unwind_sections(void *, dyld_unwind_sections *);
   #else
     // In 10.6.x and earlier, we need to implement this functionality.
-    static inline bool _dyld_find_unwind_sections(void* addr, 
+    static inline bool _dyld_find_unwind_sections(void* addr,
                                                     dyld_unwind_sections* info) {
       // Find mach-o image containing address.
       Dl_info dlinfo;
       if (!dladdr(addr, &dlinfo))
         return false;
       const mach_header *mh = (const mach_header *)dlinfo.dli_saddr;
-      
+
       // Find dwarf unwind section in that image.
       unsigned long size;
       const uint8_t *p = getsectiondata(mh, "__TEXT", "__eh_frame", &size);
       if (!p)
         return false;
-      
+
       // Fill in return struct.
       info->mh = mh;
       info->dwarf_section = p;
       info->dwarf_section_length = size;
       info->compact_unwind_section = 0;
       info->compact_unwind_section_length = 0;
-     
+
       return true;
     }
   #endif
@@ -298,6 +298,7 @@ inline bool LocalAddressSpace::findOtherFDE(pint_t targetAddr, pint_t &fde) {
 inline bool LocalAddressSpace::findFunctionName(pint_t addr, char *buf,
                                                 size_t bufLen,
                                                 unw_word_t *offset) {
+#if __APPLE__
   dl_info dyldInfo;
   if (dladdr((void *)addr, &dyldInfo)) {
     if (dyldInfo.dli_sname != NULL) {
@@ -306,6 +307,7 @@ inline bool LocalAddressSpace::findFunctionName(pint_t addr, char *buf,
       return true;
     }
   }
+#endif
   return false;
 }
 

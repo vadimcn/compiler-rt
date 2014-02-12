@@ -11,7 +11,7 @@ ifndef CFLAGS
 	CFLAGS := -Wall -O3
 endif
 
-Configs := runtime
+Configs := runtime unwind
 
 Arch := $(word 1,$(subst -, ,$(TargetTriple)))
 ifeq ($(Arch),i686)
@@ -24,4 +24,7 @@ endif
 CommonFunctions_gcc := $(filter-out atomic enable_execute_stack,$(CommonFunctions))
 
 FUNCTIONS.runtime := $(CommonFunctions_gcc) $(value ArchFunctions.$(Arch))
+FUNCTIONS.unwind := $(UnwindFunctions)
+
+CFLAGS.unwind := -I${ProjSrcRoot}/include/unwind
 

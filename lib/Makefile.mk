@@ -23,6 +23,7 @@ SubDirs += msan
 SubDirs += ubsan
 SubDirs += lsan
 SubDirs += dfsan
+SubDirs += unwind
 
 # Define the variables for this specific directory.
 Sources := $(foreach file,$(wildcard $(Dir)/*.c),$(notdir $(file)))

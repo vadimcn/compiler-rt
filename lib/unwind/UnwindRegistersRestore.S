@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "assembly.h"
+#include "../assembly.h"
 
   .text
 
 #if __i386__
-DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind13Registers_x866jumptoEv)
+DEFINE_COMPILERRT_PRIVATE_FUNCTION(_ZN9libunwind13Registers_x866jumptoEv)
 #
 # void libunwind::Registers_x86::jumpto()
 #
@@ -51,10 +51,11 @@ DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind13Registers_x866jumptoEv)
   # skip es
   # skip fs
   # skip gs
+END_COMPILERRT_FUNCTION(_ZN9libunwind13Registers_x866jumptoEv)
 
 #elif __x86_64__
 
-DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind16Registers_x86_646jumptoEv)
+DEFINE_COMPILERRT_PRIVATE_FUNCTION(_ZN9libunwind16Registers_x86_646jumptoEv)
 #
 # void libunwind::Registers_x86_64::jumpto()
 #
@@ -91,11 +92,11 @@ DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind16Registers_x86_646jumptoEv)
   movq  56(%rdi), %rsp  # cut back rsp to new location
   pop    %rdi      # rdi was saved here earlier
   ret            # rip was saved here
-
+END_COMPILERRT_FUNCTION(_ZN9libunwind16Registers_x86_646jumptoEv)
 
 #elif __ppc__
 
-DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind13Registers_ppc6jumptoEv)
+DEFINE_COMPILERRT_PRIVATE_FUNCTION(_ZN9libunwind13Registers_ppc6jumptoEv)
 ;
 ; void libunwind::Registers_ppc::jumpto()
 ;
@@ -257,6 +258,7 @@ Lnovec:
   lwz    r1,12(r3)  ; do sp now
   lwz    r3,20(r3)  ; do r3 last
   bctr
+END_COMPILERRT_FUNCTION(_ZN9libunwind13Registers_ppc6jumptoEv)
 
 #elif __arm64__
 
@@ -267,7 +269,7 @@ Lnovec:
 ;  thread_state pointer is in x0
 ;
   .p2align 2
-DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind15Registers_arm646jumptoEv)
+DEFINE_COMPILERRT_PRIVATE_FUNCTION(_ZN9libunwind15Registers_arm646jumptoEv)
   ; skip restore of x0,x1 for now
   ldp    x2, x3,  [x0, #0x010]
   ldp    x4, x5,  [x0, #0x020]
@@ -307,6 +309,7 @@ DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind15Registers_arm646jumptoEv)
 
   ldp    x0, x1,  [x0, #0x000]  ; restore x0,x1
   ret    lr            ; jump to pc
+END_COMPILERRT_FUNCTION(_ZN9libunwind15Registers_arm646jumptoEv)
 
 #elif __arm__
 
@@ -317,7 +320,7 @@ DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind15Registers_arm646jumptoEv)
 @  thread_state pointer is in r0
 @
   .p2align 2
-DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind13Registers_arm6jumptoEv)
+DEFINE_COMPILERRT_PRIVATE_FUNCTION(_ZN9libunwind13Registers_arm6jumptoEv)
   @ Use lr as base so that r0 can be restored.
   mov lr, r0
   @ 32bit thumb-2 restrictions for ldm:
@@ -327,5 +330,6 @@ DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZN9libunwind13Registers_arm6jumptoEv)
   ldr sp, [lr, #52]
   ldr lr, [lr, #60]  @ restore pc into lr
   mov pc, lr
+END_COMPILERRT_FUNCTION(_ZN9libunwind13Registers_arm6jumptoEv)
 
 #endif

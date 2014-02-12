@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "assembly.h"
+#include "../assembly.h"
 
     .text
 
@@ -25,7 +25,7 @@
 #   +-----------------------+   <-- SP
 #   +                       +
 #
-DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+DEFINE_COMPILERRT_FUNCTION(unw_getcontext)
   push  %eax
   movl  8(%esp), %eax
   movl  %ebx,  4(%eax)
@@ -51,6 +51,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
   popl  %eax
   xorl  %eax, %eax    # return UNW_ESUCCESS
   ret
+END_COMPILERRT_FUNCTION(unw_getcontext)
 
 #elif __x86_64__
 
@@ -60,7 +61,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 # On entry:
 #  thread_state pointer is in rdi
 #
-DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+DEFINE_COMPILERRT_FUNCTION(unw_getcontext)
   movq  %rax,   (%rdi)
   movq  %rbx,  8(%rdi)
   movq  %rcx, 16(%rdi)
@@ -86,6 +87,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
   # skip gs
   xorl  %eax, %eax    # return UNW_ESUCCESS
   ret
+END_COMPILERRT_FUNCTION(unw_getcontext)
 
 #elif __ppc__
 
@@ -95,7 +97,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 ; On entry:
 ;  thread_state pointer is in r3
 ;
-DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+DEFINE_COMPILERRT_FUNCTION(unw_getcontext)
   stw    r0,  8(r3)
   mflr  r0
   stw    r0,  0(r3)  ; store lr as ssr0
@@ -228,7 +230,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 
   li  r3, 0    ; return UNW_ESUCCESS
   blr
-
+END_COMPILERRT_FUNCTION(unw_getcontext)
 
 #elif __arm64__
 
@@ -239,7 +241,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 ;  thread_state pointer is in x0
 ;
   .p2align 2
-DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+DEFINE_COMPILERRT_FUNCTION(unw_getcontext)
   stp    x0, x1,  [x0, #0x000]
   stp    x2, x3,  [x0, #0x010]
   stp    x4, x5,  [x0, #0x020]
@@ -279,6 +281,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
   str    d31,     [x0, #0x208]
   ldr    x0, #0      ; return UNW_ESUCCESS
   ret
+END_COMPILERRT_FUNCTION(unw_getcontext)
 
 #elif __arm__ && !__APPLE__
 
@@ -289,7 +292,7 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 @  thread_state pointer is in r0
 @
   .p2align 2
-DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+DEFINE_COMPILERRT_FUNCTION(unw_getcontext)
   @ 32bit thumb-2 restrictions for stm:
   @ . the sp (r13) cannot be in the list
   @ . the pc (r15) cannot be in the list in an STM instruction
@@ -299,5 +302,6 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
   str lr, [r0, #60]  @ store return address as pc
   mov r0, #0      @ return UNW_ESUCCESS
   mov pc, lr
+END_COMPILERRT_FUNCTION(unw_getcontext)
 
 #endif

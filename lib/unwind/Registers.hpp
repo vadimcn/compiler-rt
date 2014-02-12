@@ -24,6 +24,7 @@ namespace libunwind {
 // For emulating 128-bit registers
 struct v128 { uint32_t vec[4]; };
 
+inline void bzero(void *s, size_t n) { memset(s, 0, n); }
 
 /// Registers_x86 holds the register state of a thread in a 32-bit intel
 /// process.
