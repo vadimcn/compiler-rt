@@ -26,5 +26,5 @@ CommonFunctions_gcc := $(filter-out atomic enable_execute_stack,$(CommonFunction
 FUNCTIONS.runtime := $(CommonFunctions_gcc) $(value ArchFunctions.$(Arch))
 FUNCTIONS.unwind := $(UnwindFunctions)
 
-CFLAGS.unwind := -I${ProjSrcRoot}/include/unwind
+CFLAGS.unwind := -I${ProjSrcRoot}/include/unwind -fno-exceptions -fno-rtti -funwind-tables -DNDEBUG
 

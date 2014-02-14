@@ -11,9 +11,9 @@ ModuleName := unwind
 SubDirs :=
 
 AsmSources := $(foreach file,$(wildcard $(Dir)/*.S),$(notdir $(file)))
-Sources := $(foreach file,$(wildcard $(Dir)/*.cpp),$(notdir $(file))) \
+Sources := $(foreach file,$(wildcard $(Dir)/*.cc),$(notdir $(file))) \
            $(foreach file,$(wildcard $(Dir)/*.c),$(notdir $(file)))
-ObjNames := $(Sources:%.cpp=%.o)
+ObjNames := $(Sources:%.cc=%.o)
 ObjNames := $(ObjNames:%.c=%.o) $(AsmSources:%.S=%.o)
 
 Implementation := Generic

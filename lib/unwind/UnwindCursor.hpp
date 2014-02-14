@@ -151,10 +151,12 @@ void DwarfFDECache<A>::removeAllIn(pint_t mh) {
   _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_unlock(&_lock));
 }
 
+#if __APPLE__
 template <typename A>
 void DwarfFDECache<A>::dyldUnloadHook(const struct mach_header *mh, intptr_t ) {
   removeAllIn((pint_t) mh);
 }
+#endif
 
 template <typename A>
 void DwarfFDECache<A>::iterateCacheEntries(void (*func)(
@@ -360,22 +362,26 @@ private:
 };
 #endif // _LIBUNWIND_SUPPORT_COMPACT_UNWIND
 
+// Should have been `#define _PURE = 0;`, but that generates a reference
+// to ___cxa_pure_virtual and we don't want any libcxxabi references in
+// a low-level library such as this one.
+#define _PURE { compilerrt_abort(); }
 
 class _LIBUNWIND_HIDDEN AbstractUnwindCursor {
 public:
-  virtual bool        validReg(int) = 0;
-  virtual unw_word_t  getReg(int) = 0;
-  virtual void        setReg(int, unw_word_t) = 0;
-  virtual bool        validFloatReg(int) = 0;
-  virtual double      getFloatReg(int) = 0;
-  virtual void        setFloatReg(int, double) = 0;
-  virtual int         step() = 0;
-  virtual void        getInfo(unw_proc_info_t *) = 0;
-  virtual void        jumpto() = 0;
-  virtual bool        isSignalFrame() = 0;
-  virtual bool        getFunctionName(char *bf, size_t ln, unw_word_t *off) = 0;
-  virtual void        setInfoBasedOnIPRegister(bool isReturnAddr = false) = 0;
-  virtual const char *getRegisterName(int num) = 0;
+  virtual bool        validReg(int) _PURE
+  virtual unw_word_t  getReg(int) _PURE
+  virtual void        setReg(int, unw_word_t) _PURE
+  virtual bool        validFloatReg(int) _PURE
+  virtual double      getFloatReg(int) _PURE
+  virtual void        setFloatReg(int, double) _PURE
+  virtual int         step() _PURE
+  virtual void        getInfo(unw_proc_info_t *) _PURE
+  virtual void        jumpto() _PURE
+  virtual bool        isSignalFrame() _PURE
+  virtual bool        getFunctionName(char *bf, size_t ln, unw_word_t *off) _PURE
+  virtual void        setInfoBasedOnIPRegister(bool isReturnAddr = false) _PURE
+  virtual const char *getRegisterName(int num) _PURE
 };
 
 

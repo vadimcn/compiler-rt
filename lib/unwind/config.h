@@ -16,6 +16,14 @@
 
 #include <assert.h>
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
+#include "../int_util.h"
+#ifdef __cplusplus
+  }
+#endif
+
 // Define static_assert() unless already defined by compiler.
 #ifndef __has_feature
   #define __has_feature(__x) 0
@@ -26,25 +34,20 @@
                                                   __attribute__( ( unused ) );
 #endif
 
+#define _LIBUNWIND_LOG(msg, ...) fprintf(stderr, "libuwind: " msg, __VA_ARGS__)
+#define _LIBUNWIND_ABORT(msg) do { \
+    fprintf(stderr, "%s", msg); fflush(stderr); compilerrt_abort(); \
+  } while (false)
+
 // Platform specific configuration defines.
 #if __APPLE__
   #include <Availability.h>
-  #ifdef __cplusplus
-    extern "C" {
-  #endif
-    void __assert_rtn(const char *, const char *, int, const char *)
-                                                      __attribute__((noreturn));
-  #ifdef __cplusplus
-    }
-  #endif
 
   #define _LIBUNWIND_BUILD_ZERO_COST_APIS (__i386__ || __x86_64__ || __arm64__)
   #define _LIBUNWIND_BUILD_SJLJ_APIS      (__arm__)
   #define _LIBUNWIND_SUPPORT_FRAME_APIS   (__i386__ || __x86_64__)
   #define _LIBUNWIND_EXPORT               __attribute__((visibility("default")))
   #define _LIBUNWIND_HIDDEN               __attribute__((visibility("hidden")))
-  #define _LIBUNWIND_LOG(msg, ...) fprintf(stderr, "libuwind: " msg, __VA_ARGS__)
-  #define _LIBUNWIND_ABORT(msg) __assert_rtn(__func__, __FILE__, __LINE__, msg)
 
   #if FOR_DYLD
     #define _LIBUNWIND_SUPPORT_COMPACT_UNWIND 1
@@ -57,16 +60,12 @@
   #endif
 
 #else
-  void __assert_rtn(const char *, const char *, int, const char *)
-                                                    __attribute__((noreturn));
 
   #define _LIBUNWIND_BUILD_ZERO_COST_APIS (__i386__ || __x86_64__ || __arm64__ || __WIN32__)
   #define _LIBUNWIND_BUILD_SJLJ_APIS      (__arm__)
-  #define _LIBUNWIND_SUPPORT_FRAME_APIS   (__i386__ || __x86_64__)
+  #define _LIBUNWIND_SUPPORT_FRAME_APIS   (__i386__ || __x86_64__ || __WIN32__)
   #define _LIBUNWIND_EXPORT               /*__attribute__((visibility("default")))*/
   #define _LIBUNWIND_HIDDEN               /*__attribute__((visibility("hidden")))*/
-  #define _LIBUNWIND_LOG(msg, ...) fprintf(stderr, "libuwind: " msg, __VA_ARGS__)
-  #define _LIBUNWIND_ABORT(msg) __assert_rtn(__func__, __FILE__, __LINE__, msg)
 
   #if FOR_DYLD
     #define _LIBUNWIND_SUPPORT_COMPACT_UNWIND 1
