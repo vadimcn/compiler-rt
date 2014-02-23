@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 
 #if __APPLE__
   #include <mach-o/dyld.h>
@@ -55,7 +54,11 @@ private:
 
   // These fields are all static to avoid needing an initializer.
   // There is only one instance of this class per process.
-  static pthread_rwlock_t _lock;
+  static long _lock;
+  static void lock_read();
+  static void lock_write();
+  static void unlock();
+
 #if __APPLE__
   static void dyldUnloadHook(const struct mach_header *mh, intptr_t slide);
   static bool _registeredForDyldUnloads;
@@ -83,7 +86,24 @@ template <typename A>
 typename DwarfFDECache<A>::entry DwarfFDECache<A>::_initialBuffer[64];
 
 template <typename A>
-pthread_rwlock_t DwarfFDECache<A>::_lock = PTHREAD_RWLOCK_INITIALIZER;
+long DwarfFDECache<A>::_lock = 0;
+
+template <typename A>
+void DwarfFDECache<A>::lock_read() {
+  while(__sync_lock_test_and_set(&_lock, 1) != 0)
+    ;
+}
+
+template <typename A>
+void DwarfFDECache<A>::lock_write() {
+  while(__sync_lock_test_and_set(&_lock, 1) != 0)
+    ;
+}
+
+template <typename A>
+void DwarfFDECache<A>::unlock() {
+  __sync_lock_release(&_lock);
+}
 
 #if __APPLE__
 template <typename A>
@@ -93,7 +113,7 @@ bool DwarfFDECache<A>::_registeredForDyldUnloads = false;
 template <typename A>
 typename A::pint_t DwarfFDECache<A>::findFDE(pint_t mh, pint_t pc) {
   pint_t result = 0;
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_rdlock(&_lock));
+  lock_read();
   for (entry *p = _buffer; p < _bufferUsed; ++p) {
     if ((mh == p->mh) || (mh == 0)) {
       if ((p->ip_start <= pc) && (pc < p->ip_end)) {
@@ -102,14 +122,14 @@ typename A::pint_t DwarfFDECache<A>::findFDE(pint_t mh, pint_t pc) {
       }
     }
   }
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_unlock(&_lock));
+  unlock();
   return result;
 }
 
 template <typename A>
 void DwarfFDECache<A>::add(pint_t mh, pint_t ip_start, pint_t ip_end,
                            pint_t fde) {
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_wrlock(&_lock));
+  lock_write();
   if (_bufferUsed >= _bufferEnd) {
     size_t oldSize = (size_t)(_bufferEnd - _buffer);
     size_t newSize = oldSize * 4;
@@ -133,12 +153,12 @@ void DwarfFDECache<A>::add(pint_t mh, pint_t ip_start, pint_t ip_end,
     _registeredForDyldUnloads = true;
   }
 #endif
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_unlock(&_lock));
+  unlock();
 }
 
 template <typename A>
 void DwarfFDECache<A>::removeAllIn(pint_t mh) {
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_wrlock(&_lock));
+  lock_write();
   entry *d = _buffer;
   for (const entry *s = _buffer; s < _bufferUsed; ++s) {
     if (s->mh != mh) {
@@ -148,7 +168,7 @@ void DwarfFDECache<A>::removeAllIn(pint_t mh) {
     }
   }
   _bufferUsed = d;
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_unlock(&_lock));
+  unlock();
 }
 
 #if __APPLE__
@@ -161,11 +181,11 @@ void DwarfFDECache<A>::dyldUnloadHook(const struct mach_header *mh, intptr_t ) {
 template <typename A>
 void DwarfFDECache<A>::iterateCacheEntries(void (*func)(
     unw_word_t ip_start, unw_word_t ip_end, unw_word_t fde, unw_word_t mh)) {
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_wrlock(&_lock));
+  lock_write();
   for (entry *p = _buffer; p < _bufferUsed; ++p) {
     (*func)(p->ip_start, p->ip_end, p->fde, p->mh);
   }
-  _LIBUNWIND_LOG_NON_ZERO(::pthread_rwlock_unlock(&_lock));
+  unlock();
 }
 #endif // _LIBUNWIND_SUPPORT_DWARF_UNWIND
 
