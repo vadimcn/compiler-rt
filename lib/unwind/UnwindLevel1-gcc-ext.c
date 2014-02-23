@@ -213,7 +213,7 @@ _LIBUNWIND_EXPORT void __register_frame_info_bases(const void *fde, void *ob,
   (void)db;
  _LIBUNWIND_TRACE_API("__register_frame_info_bases(%p,%p, %p, %p)\n",
                             fde, ob, tb, db);
-  // do nothing, this function never worked in Mac OS X
+  _unw_add_dynamic_fde((unw_word_t)(uintptr_t) fde);
 }
 
 _LIBUNWIND_EXPORT void __register_frame_info(const void *fde, void *ob) {
@@ -232,7 +232,7 @@ _LIBUNWIND_EXPORT void __register_frame_info_table_bases(const void *fde,
   (void)db;
   _LIBUNWIND_TRACE_API("__register_frame_info_table_bases"
                              "(%p,%p, %p, %p)\n", fde, ob, tb, db);
-  // do nothing, this function never worked in Mac OS X
+  _unw_add_dynamic_fde((unw_word_t)(uintptr_t) fde);
 }
 
 _LIBUNWIND_EXPORT void __register_frame_info_table(const void *fde, void *ob) {
@@ -251,14 +251,14 @@ _LIBUNWIND_EXPORT void __register_frame_table(const void *fde) {
 _LIBUNWIND_EXPORT void *__deregister_frame_info(const void *fde) {
   (void)fde;
   _LIBUNWIND_TRACE_API("__deregister_frame_info(%p)\n", fde);
-  // do nothing, this function never worked in Mac OS X
+  _unw_remove_dynamic_fde((unw_word_t)(uintptr_t) fde);
   return NULL;
 }
 
 _LIBUNWIND_EXPORT void *__deregister_frame_info_bases(const void *fde) {
   (void)fde;
   _LIBUNWIND_TRACE_API("__deregister_frame_info_bases(%p)\n", fde);
-  // do nothing, this function never worked in Mac OS X
+  _unw_remove_dynamic_fde((unw_word_t)(uintptr_t) fde);
   return NULL;
 }
 #endif // _LIBUNWIND_SUPPORT_FRAME_APIS
