@@ -7,7 +7,7 @@
 
 #ifdef __x86_64__
 
-#ifndef __ELF__
+#if defined(__APPLE__)
 .literal4
 #endif
 two: .single 2.0
