@@ -11,7 +11,7 @@ ifndef CFLAGS
 	CFLAGS := -Wall -O3
 endif
 
-Configs := runtime
+Configs := builtins
 
 Arch := $(word 1,$(subst -, ,$(TargetTriple)))
 ifeq ($(Arch),i686)
@@ -23,5 +23,5 @@ endif
 # Filter out stuff that gcc cannot compile (these are only needed for clang-generated code anywasys).
 CommonFunctions_gcc := $(filter-out atomic enable_execute_stack,$(CommonFunctions))
 
-FUNCTIONS.runtime := $(CommonFunctions_gcc) $(value ArchFunctions.$(Arch))
+FUNCTIONS.builtins := $(CommonFunctions_gcc) $(value ArchFunctions.$(Arch))
 
