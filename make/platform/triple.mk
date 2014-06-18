@@ -17,7 +17,11 @@ Arch := $(word 1,$(subst -, ,$(TargetTriple)))
 ifeq ($(Arch),i686)
 	Arch := i386
 else ifeq ($(Arch),arm)
+ifneq (,$(findstring ios,$(TargetTriple)))
 	Arch := armv7
+else ifneq (,$(findstring android,$(TargetTriple)))
+	Arch := armv7
+endif
 endif
 
 # Filter out stuff that gcc cannot compile (these are only needed for clang-generated code anywasys).
