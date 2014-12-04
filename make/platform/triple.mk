@@ -11,9 +11,13 @@ ifndef CFLAGS
 	CFLAGS := -Wall -O3
 endif
 
-Configs := builtins
+override CFLAGS := $(CFLAGS) -Wno-error
+
+Configs := builtins asan
 
 Arch := $(word 1,$(subst -, ,$(TargetTriple)))
+Sys := $(word 3,$(subst -, ,$(TargetTriple)))
+
 ifeq ($(Arch),i686)
 	Arch := i386
 else ifeq ($(Arch),arm)
@@ -22,6 +26,13 @@ ifneq (,$(findstring ios,$(TargetTriple)))
 else ifneq (,$(findstring android,$(TargetTriple)))
 	Arch := armv7
 endif
+endif
+
+ifeq ($(Sys),windows)
+    # compiler-rt makefile adds -fPIC by default, but Mingw gcc emits a warning:
+    # "-fPIC ignored for target (all code is position independent)", which becomes
+    # an error because of -Werror.
+    override CFLAGS := $(CFLAGS) -fno-PIC
 endif
 
 # Filter out stuff that gcc cannot compile (these are only needed for clang-generated code anywasys).
@@ -57,4 +68,4 @@ endif
 ArchEnabledFunctions := $(filter-out $(ArchDisabledFunctions),$(value ArchFunctions.$(Arch)))
 
 FUNCTIONS.builtins := $(CommonFunctions_gcc) $(ArchEnabledFunctions)
-
+FUNCTIONS.asan := $(AsanFunctions) $(InterceptionFunctions) $(SanitizerCommonFunctions)

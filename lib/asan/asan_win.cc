@@ -39,6 +39,7 @@ namespace __asan {
 // ---------------------- TSD ---------------- {{{1
 static bool tsd_key_inited = false;
 
+#if _MSC_VER // MSVC
 static __declspec(thread) void *fake_tsd = 0;
 
 void AsanTSDInit(void (*destructor)(void *tsd)) {
@@ -55,6 +56,31 @@ void AsanTSDSet(void *tsd) {
   CHECK(tsd_key_inited);
   fake_tsd = tsd;
 }
+
+#else // GCC
+// While GCC does support thread-local vars (via __thread), the underlying code calls malloc(),
+// which ASAN intercepts, thus causing infinite recursion.  Let's just use raw Windows TLS API.
+
+static DWORD tsd_key = 0;
+
+void AsanTSDInit(void (*destructor)(void *tsd)) {
+  // FIXME: we're ignoring the destructor for now.
+  tsd_key = TlsAlloc();
+  CHECK_NE(tsd_key, TLS_OUT_OF_INDEXES);
+  tsd_key_inited = true;
+}
+
+void *AsanTSDGet() {
+  CHECK(tsd_key_inited);
+  return TlsGetValue(tsd_key);
+}
+
+void AsanTSDSet(void *tsd) {
+  CHECK(tsd_key_inited);
+  TlsSetValue(tsd_key, tsd);
+}
+
+#endif
 
 void PlatformTSDDtor(void *tsd) {
   AsanThread::TSDDtor(tsd);

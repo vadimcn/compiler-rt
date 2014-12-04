@@ -356,6 +356,7 @@ INTERCEPTOR(int, _except_handler3, void *a, void *b, void *c, void *d) {
   return REAL(_except_handler3)(a, b, c, d);
 }
 
+/*
 #if ASAN_DYNAMIC
 // This handler is named differently in -MT and -MD CRTs.
 #define _except_handler4 _except_handler4_common
@@ -365,6 +366,7 @@ INTERCEPTOR(int, _except_handler4, void *a, void *b, void *c, void *d) {
   __asan_handle_no_return();
   return REAL(_except_handler4)(a, b, c, d);
 }
+*/
 #endif
 
 static inline int CharCmp(unsigned char c1, unsigned char c2) {
@@ -826,7 +828,7 @@ void InitializeWindowsInterceptors() {
   ASAN_INTERCEPT_FUNC(CreateThread);
   ASAN_INTERCEPT_FUNC(RaiseException);
   ASAN_INTERCEPT_FUNC(_except_handler3);
-  ASAN_INTERCEPT_FUNC(_except_handler4);
+  //ASAN_INTERCEPT_FUNC(_except_handler4);
 }
 
 }  // namespace __asan

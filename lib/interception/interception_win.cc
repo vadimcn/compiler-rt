@@ -183,6 +183,7 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
 
 static const void **InterestingDLLsAvailable() {
   const char *InterestingDLLs[] = {"kernel32.dll",
+                                   "msvcrt.dll",   // Windows copy of CRT
                                    "msvcr110.dll", // VS2012
                                    "msvcr120.dll", // VS2013
                                    NULL};
